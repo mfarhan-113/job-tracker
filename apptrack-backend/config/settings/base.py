@@ -21,12 +21,23 @@ env = environ.Env()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+# Fallback to a default key if not set (not recommended for production)
+SECRET_KEY = env(
+    "SECRET_KEY",
+    default="django-insecure-your-default-secret-key-change-this-in-production"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+# Allow all hosts in development, restrict in production
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = env.list(
+        "ALLOWED_HOSTS",
+        default=["apptrack-backend.onrender.com", "localhost", "127.0.0.1"]
+    )
 
 # Application definition
 INSTALLED_APPS = [
