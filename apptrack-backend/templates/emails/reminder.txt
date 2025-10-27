@@ -1,0 +1,19 @@
+Hello {{ user.get_full_name|default:user.email }},
+
+This is a reminder about your {{ application.get_kind_display|lower }} application for "{{ application.title }}" at {{ application.organization }}.
+
+{% if reminder.message %}
+Message: {{ reminder.message }}
+{% endif %}
+
+Application Details:
+- Title: {{ application.title }}
+- Organization: {{ application.organization }}
+- Status: {{ application.get_status_display }}
+{% if application.deadline %}- Deadline: {{ application.deadline|date:"F j, Y" }}
+{% endif %}
+
+View your application: {{ site_domain }}{% url 'application-detail' application.id %}
+
+Best regards,
+{{ site_name }} Team
