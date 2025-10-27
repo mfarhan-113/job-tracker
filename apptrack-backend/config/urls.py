@@ -23,8 +23,15 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+def health_check(request):
+    """Health check endpoint for load balancers and monitoring"""
+    return JsonResponse({"status": "ok"})
+
 # Public endpoints that don't require authentication
 urlpatterns = [
+    # Health check
+    path('api/health/', health_check, name='health-check'),
+    
     # Admin
     path('admin/', admin.site.urls),
     
@@ -32,8 +39,8 @@ urlpatterns = [
     path('api/', include('apps.core.urls')),  # API root
     
     # API Documentation
-    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    re_path(r'^api/docs/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^api/docs/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     
     # Direct health check endpoint (bypasses all authentication)
     path('health/', lambda r: JsonResponse({'status': 'ok'}, status=200)),
