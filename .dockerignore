@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media
+staticfiles
+
+# Node
+node_modules/
+npm-debug.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Frontend
+apptrack-frontend/.next/
+apptrack-frontend/node_modules/
+apptrack-frontend/out/
+
+# Backend
+apptrack-backend/venv/
+apptrack-backend/media/
+apptrack-backend/static/
+
+# OS
+.DS_Store
+Thumbs.db

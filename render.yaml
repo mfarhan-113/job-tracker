@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: apptrack-backend
+    env: python
+    buildCommand: |
+      pip install -r apptrack-backend/requirements.txt
+      python apptrack-backend/manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --chdir apptrack-backend
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: PYTHON_VERSION
+        value: 3.9.6
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: apptrack-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://job-tracker-1761570657.netlify.app"
+
+databases:
+  - name: apptrack-db
+    databaseName: apptrack
+    user: apptrack_user
+    plan: free
