@@ -184,17 +184,28 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Create media directory if it doesn't exist
 os.makedirs(MEDIA_ROOT, exist_ok=True)
 
-# Celery settings
-CELERY_BROKER_URL = env('CELERY_BROKER_URL')
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+# Celery settings (optional)
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default=None)  # Set to None if not using Celery
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default=None)  # Set to None if not using Celery results
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# Email settings
-EMAIL_BACKEND = env('EMAIL_BACKEND')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+# Only configure Celery if broker URL is set
+if CELERY_BROKER_URL is None:
+    CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = False
+    CELERY_TASK_ALWAYS_EAGER = True  # Run tasks synchronously in the same process
+    CELERY_TASK_EAGER_PROPAGATES = True
+
+# Email settings (optional, with console backend as default)
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@example.com')
+EMAIL_HOST = env('EMAIL_HOST', default='')
+EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 
 # Twilio settings (for WhatsApp notifications)
 TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID', default='')
