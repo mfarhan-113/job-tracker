@@ -10,7 +10,7 @@ app_name = 'users'
 
 urlpatterns = [
     # Authentication
-    path('register/', views.UserRegistrationView.as_view(), name='register'),
+    path('register/', views.RegisterView.as_view(), name='register'),
     path('token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('logout/', views.LogoutView.as_view(), name='logout'),

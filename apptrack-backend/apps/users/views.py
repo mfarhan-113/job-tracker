@@ -2,6 +2,7 @@
 Views for the users app.
 """
 from rest_framework import status, permissions
+from rest_framework import generics, permissions
 from rest_framework.generics import (
     CreateAPIView,
     RetrieveUpdateAPIView,
@@ -12,18 +13,16 @@ from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from .serializers import UserSerializer, UserCreateSerializer
 
 from . import serializers
 
 User = get_user_model()
 
 
-class UserRegistrationView(CreateAPIView):
-    """
-    View for user registration.
-    """
-    serializer_class = serializers.UserCreateSerializer
+class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
         print("Incoming registration data:", request.data)  # Debug log

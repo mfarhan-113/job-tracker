@@ -74,9 +74,34 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
-    Custom token obtain serializer to include user data in the response.
+    Custom token obtain serializer that supports both email and username login
+    and includes user data in the response.
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'] = serializers.EmailField(required=False)
+    
     def validate(self, attrs):
+        email = attrs.get('email')
+        username = attrs.get('username')
+        
+        # If email is provided, find the username
+        if email and not username:
+            try:
+                user = User.objects.get(email=email)
+                attrs['username'] = user.username
+            except User.DoesNotExist:
+                raise serializers.ValidationError({
+                    'detail': 'No active account found with the given credentials'
+                })
+        
+        # If neither email nor username is provided
+        elif not username:
+            raise serializers.ValidationError({
+                'detail': 'Must include either username or email and password.'
+            })
+            
+        # Standard validation
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
         
