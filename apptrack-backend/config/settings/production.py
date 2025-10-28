@@ -76,9 +76,23 @@ LOGGING = {
     },
 }
 
+# Security settings
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'job-tracker-nkrz.onrender.com',
+    '.onrender.com',  # Allow all Render subdomains
+]
+
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+
+# Add the following to handle subdomains
+CSRF_TRUSTED_ORIGINS = [
+    'https://job-tracker-nkrz.onrender.com',
+    'https://*.onrender.com',
+]
 
 # File storage settings - using local file system
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
