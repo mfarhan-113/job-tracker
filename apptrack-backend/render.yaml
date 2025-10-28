@@ -2,7 +2,7 @@ services:
   - type: web
     name: apptrack-backend
     env: python
-    buildCommand: "pip install -r requirements.txt && python manage.py migrate"
+    buildCommand: "./build.sh"
     startCommand: "gunicorn config.wsgi:application"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -11,6 +11,8 @@ services:
         value: 3.9.6
       - key: DJANGO_DEBUG
         value: "False"
+      - key: DISABLE_COLLECTSTATIC
+        value: "1"
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
@@ -18,10 +20,9 @@ services:
           name: apptrack-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: "*"
+        value: ".onrender.com,localhost,127.0.0.1"
 
 databases:
   - name: apptrack-db
     databaseName: apptrack
     user: apptrack_user
-    plan: free
