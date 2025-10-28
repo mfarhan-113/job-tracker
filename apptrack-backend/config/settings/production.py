@@ -90,6 +90,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://job-tracker-navy-two.vercel.app",
     "https://job-tracker-3nsqv6x4r-mfarhan-113s-projects.vercel.app",
     "https://job-tracker-8lsvxk1xp-mfarhan-113s-projects.vercel.app",
+    "https://job-tracker-cnjbvm1d4-mfarhan-113s-projects.vercel.app",
     "http://localhost:3000",
 ]
 # Add the following to handle subdomains
