@@ -5,7 +5,14 @@ import os
 import mimetypes
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
-from storages.backends.s3boto3 import S3Boto3Storage
+
+# Only import boto3 if AWS settings are available
+try:
+    import boto3
+    from botocore.exceptions import ClientError
+    BOTO3_AVAILABLE = True
+except ImportError:
+    BOTO3_AVAILABLE = False
 
 
 def get_file_mimetype(file):
@@ -37,56 +44,48 @@ class OverwriteStorage(FileSystemStorage):
         return name
 
 
-class MediaStorage(S3Boto3Storage):
-    """Custom storage for media files on S3."""
-
-    location = 'media'
-    file_overwrite = False
-    default_acl = 'private'
-    custom_domain = False
-
-    def get_object_parameters(self, name):
-        params = super().get_object_parameters(name)
-        # Set content type based on file extension
-        content_type = mimetypes.guess_type(name)[0]
-        if content_type:
-            params['ContentType'] = content_type
-        return params
+class MediaStorage(FileSystemStorage):
+    """Local file system storage for media files."""
+    def __init__(self, location=None, base_url=None, file_permissions_mode=None):
+        if location is None:
+            location = os.path.join(settings.BASE_DIR, 'media')
+        if base_url is None:
+            base_url = '/media/'
+        super().__init__(location=location, base_url=base_url, file_permissions_mode=file_permissions_mode)
 
 
-def get_s3_signed_url(key, expires_in=3600):
+def get_file_url(key, expires_in=3600):
     """
-    Generate a pre-signed URL for an S3 object.
-
-    Args:
-        key (str): The S3 object key
-        expires_in (int): Expiration time in seconds
-
-    Returns:
-        str: Pre-signed URL or None if an error occurs
+    Get a URL for a file, using local filesystem by default.
+    For AWS S3, you'll need to set up the appropriate settings.
     """
-    import boto3
-    from botocore.exceptions import ClientError
+    # If AWS settings are available, try to generate a pre-signed URL
+    if (BOTO3_AVAILABLE and 
+        hasattr(settings, 'AWS_ACCESS_KEY_ID') and 
+        hasattr(settings, 'AWS_SECRET_ACCESS_KEY') and 
+        hasattr(settings, 'AWS_STORAGE_BUCKET_NAME')):
+        
+        try:
+            s3_client = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                endpoint_url=getattr(settings, 'AWS_S3_ENDPOINT_URL', None),
+                region_name=getattr(settings, 'AWS_S3_REGION_NAME', None),
+                config=boto3.session.Config(signature_version='s3v4')
+            )
 
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        endpoint_url=settings.AWS_S3_ENDPOINT_URL or None,
-        region_name=getattr(settings, 'AWS_S3_REGION_NAME', None) or None,
-        config=boto3.session.Config(signature_version='s3v4')
-    )
-
-    try:
-        url = s3_client.generate_presigned_url(
-            'get_object',
-            Params={
-                'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
-                'Key': key
-            },
-            ExpiresIn=expires_in
-        )
-        return url
-    except ClientError as e:
-        print(f"Error generating pre-signed URL: {e}")
-        return None
+            url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={
+                    'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
+                    'Key': key
+                },
+                ExpiresIn=expires_in
+            )
+            return url
+        except (ClientError, Exception) as e:
+            print(f"Error generating pre-signed URL, falling back to local URL: {e}")
+    
+    # Fall back to local file URL
+    return f"/media/{key}"
