@@ -86,8 +86,11 @@ ALLOWED_HOSTS = [
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
-
+CORS_ALLOWED_ORIGINS = [
+    "https://job-tracker-navy-two.vercel.app",
+    "https://job-tracker-3nsqv6x4r-mfarhan-113s-projects.vercel.app",
+    "http://localhost:3000",
+]
 # Add the following to handle subdomains
 CSRF_TRUSTED_ORIGINS = [
     'https://job-tracker-nkrz.onrender.com',
