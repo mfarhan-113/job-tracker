@@ -43,14 +43,24 @@ class UserCreateSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
+        print("Validating user data:", attrs)  # Debug log
         if attrs['password'] != attrs.pop('password_confirm'):
+            print("Password mismatch error")  # Debug log
             raise serializers.ValidationError({"password": _("Password fields didn't match.")})
+        print("Validation passed")  # Debug log
         return attrs
 
     def create(self, validated_data):
+        print("Creating user with data:", validated_data)  # Debug log
+        # Remove password_confirm as it's not needed for user creation
         validated_data.pop('password_confirm', None)
-        user = User.objects.create_user(**validated_data)
-        return user
+        try:
+            user = User.objects.create_user(**validated_data)
+            print("User created successfully:", user)  # Debug log
+            return user
+        except Exception as e:
+            print("Error creating user:", str(e))  # Debug log
+            raise
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

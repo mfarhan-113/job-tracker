@@ -28,17 +28,25 @@ class UserRegistrationView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         print("Incoming registration data:", request.data)  # Debug log
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
         
-        # Generate tokens
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'user': serializers.UserSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED)
+        try:
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            
+            # Generate tokens
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'user': serializers.UserSerializer(user).data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            print("Registration error:", str(e))  # Log the full error
+            if hasattr(e, 'detail'):
+                print("Error details:", e.detail)  # Log validation errors
+            raise
 
 
 class UserProfileView(RetrieveUpdateAPIView):
