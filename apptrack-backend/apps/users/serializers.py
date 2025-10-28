@@ -79,8 +79,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['email'] = serializers.EmailField(required=False)
-    
+        self.fields['email'] = serializers.EmailField(required=False, write_only=True)
+        self.fields['username'] = serializers.CharField(required=False)
+        
     def validate(self, attrs):
         email = attrs.get('email')
         username = attrs.get('username')
@@ -88,7 +89,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # If email is provided, find the username
         if email and not username:
             try:
-                user = User.objects.get(email=email)
+                user = User.objects.get(email__iexact=email)
+                if not user.is_active:
+                    raise serializers.ValidationError({
+                        'detail': 'This account is not active.'
+                    })
                 attrs['username'] = user.username
             except User.DoesNotExist:
                 raise serializers.ValidationError({
@@ -101,16 +106,24 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 'detail': 'Must include either username or email and password.'
             })
             
-        # Standard validation
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
-        
-        # Add custom claims
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        data['user'] = UserSerializer(self.user).data
-        
-        return data
+        try:
+            # Standard validation
+            data = super().validate(attrs)
+            refresh = self.get_token(self.user)
+            
+            # Add custom claims
+            data['refresh'] = str(refresh)
+            data['access'] = str(refresh.access_token)
+            data['user'] = UserSerializer(self.user).data
+            
+            return data
+            
+        except Exception as e:
+            # Log the actual error for debugging
+            print(f"Authentication error: {str(e)}")
+            raise serializers.ValidationError({
+                'detail': 'Unable to log in with provided credentials.'
+            })
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
