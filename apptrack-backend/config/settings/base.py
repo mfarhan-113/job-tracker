@@ -63,10 +63,6 @@ INSTALLED_APPS = [
     'apps.applications.apps.ApplicationsConfig',
     'apps.reminders.apps.RemindersConfig',
     'apps.core.apps.CoreConfig',
-    'apps.core',
-    'apps.users',
-    'apps.applications',
-    'apps.reminders',
 ]
 
 MIDDLEWARE = [
