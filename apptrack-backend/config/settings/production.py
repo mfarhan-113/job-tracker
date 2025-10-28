@@ -85,6 +85,9 @@ ALLOWED_HOSTS = [
 ]
 
 # CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # For development only, lock this down in production
+
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://job-tracker-navy-two.vercel.app",
